@@ -1,151 +1,212 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import CodePanel from "@/components/editor/CodePanel";
 import PreviewFrame from "@/components/editor/PreviewFrame";
 import Toolbar from "@/components/editor/Toolbar";
+import ConsolePanel, { ConsoleEntry } from "@/components/editor/ConsolePanel";
 import { DeviceType, deviceWidths } from "@/components/editor/DeviceSimulator";
 import { useProject } from "@/hooks/useProject";
 import { getProjectsFromStorage } from "@/lib/projectEncoder";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+
+const DEBOUNCE_MS = 3000;
 
 const Editor = () => {
   const { projectId } = useParams();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<"html" | "css" | "js">("html");
   const [device, setDevice] = useState<DeviceType>("desktop");
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [consoleEntries, setConsoleEntries] = useState<ConsoleEntry[]>([]);
+  const [codeVisible, setCodeVisible] = useState(true);
+  const [previewVisible, setPreviewVisible] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const existingProject = projectId
     ? getProjectsFromStorage().find((p) => p.id === projectId)
     : undefined;
 
-  const { project, updateField, addPackage, removePackage, save, isSaved, getShareUrl } =
+  const { project, updateField, addPackage, removePackage } =
     useProject(existingProject);
 
   const [html, setHtml] = useState(project.html);
   const [css, setCss] = useState(project.css);
   const [js, setJs] = useState(project.js);
 
-  // Debounced update to project
-  useEffect(() => {
-    const t = setTimeout(() => {
+  // Preview state (debounced)
+  const [previewHtml, setPreviewHtml] = useState(project.html);
+  const [previewCss, setPreviewCss] = useState(project.css);
+  const [previewJs, setPreviewJs] = useState(project.js);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const scheduleUpdate = useCallback(() => {
+    setIsUpdating(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setPreviewHtml(html);
+      setPreviewCss(css);
+      setPreviewJs(js);
       updateField("html", html);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [html, updateField]);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
       updateField("css", css);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [css, updateField]);
+      updateField("js", js);
+      setIsUpdating(false);
+    }, DEBOUNCE_MS);
+  }, [html, css, js, updateField]);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      updateField("js", js);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [js, updateField]);
+    scheduleUpdate();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [scheduleUpdate]);
+
+  const handleConsoleEntry = useCallback((entry: ConsoleEntry) => {
+    setConsoleEntries((prev) => [...prev, entry]);
+  }, []);
 
   const tabs = [
-    { key: "html" as const, label: "HTML" },
-    { key: "css" as const, label: "CSS" },
-    { key: "js" as const, label: "JS" },
+    { key: "html" as const, label: "HTML", color: "hsl(15, 85%, 60%)" },
+    { key: "css" as const, label: "CSS", color: "hsl(210, 85%, 60%)" },
+    { key: "js" as const, label: "JS", color: "hsl(50, 85%, 55%)" },
   ];
 
   const values = { html, css, js };
-  const setters = {
-    html: setHtml,
-    css: setCss,
-    js: setJs,
-  };
+  const setters = { html: setHtml, css: setCss, js: setJs };
+
+  const editorPanel = (
+    <div className="flex flex-col h-full min-h-0">
+      {/* Tabs */}
+      <div className="flex border-b border-border/50 shrink-0 bg-secondary/10">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`relative flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+              activeTab === tab.key
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground/70"
+            }`}
+          >
+            <span className="flex items-center justify-center gap-1.5">
+              <span
+                className="w-2 h-2 rounded-full transition-transform duration-200"
+                style={{
+                  backgroundColor: tab.color,
+                  transform: activeTab === tab.key ? "scale(1)" : "scale(0.7)",
+                  opacity: activeTab === tab.key ? 1 : 0.5,
+                }}
+              />
+              {tab.label}
+            </span>
+            {activeTab === tab.key && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))]"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Active panel with fade transition */}
+      <div className="flex-1 min-h-0 relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute inset-0"
+          >
+            <CodePanel
+              language={activeTab.toUpperCase()}
+              value={values[activeTab]}
+              onChange={setters[activeTab]}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+
+  const previewPanel = (
+    <PreviewFrame
+      html={previewHtml}
+      css={previewCss}
+      js={previewJs}
+      packages={project.packages}
+      width={deviceWidths[device]}
+      isUpdating={isUpdating}
+      onConsoleEntry={handleConsoleEntry}
+    />
+  );
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       <Toolbar
         projectName={project.name}
         onNameChange={(name) => updateField("name", name)}
-        onSave={save}
-        isSaved={isSaved}
-        getShareUrl={getShareUrl}
         device={device}
         onDeviceChange={setDevice}
         packages={project.packages}
         onAddPackage={addPackage}
         onRemovePackage={removePackage}
+        consoleOpen={consoleOpen}
+        onToggleConsole={() => setConsoleOpen((v) => !v)}
+        codeVisible={codeVisible}
+        onToggleCode={() => setCodeVisible((v) => !v)}
+        previewVisible={previewVisible}
+        onTogglePreview={() => setPreviewVisible((v) => !v)}
       />
 
-      <div className="flex-1 flex min-h-0">
-        {/* Code panels */}
-        <div className="w-full md:w-1/2 flex flex-col min-h-0 border-r border-border/50">
-          {/* Tabs for mobile or stacked view */}
-          {isMobile ? (
-            <>
-              <div className="flex border-b border-border/50 shrink-0">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
-                      activeTab === tab.key
-                        ? "text-foreground border-b-2 border-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex-1 min-h-0">
-                <CodePanel
-                  language={activeTab.toUpperCase()}
-                  value={values[activeTab]}
-                  onChange={setters[activeTab]}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Desktop: stacked three panels */}
-              <div className="flex-1 flex flex-col min-h-0 divide-y divide-border/30">
-                <div className="flex-1 min-h-0 overflow-auto">
-                  <CodePanel language="HTML" value={html} onChange={setHtml} />
-                </div>
-                <div className="flex-1 min-h-0 overflow-auto">
-                  <CodePanel language="CSS" value={css} onChange={setCss} />
-                </div>
-                <div className="flex-1 min-h-0 overflow-auto">
-                  <CodePanel language="JS" value={js} onChange={setJs} />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+      <div className="flex-1 flex flex-col min-h-0">
+        {isMobile ? (
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 min-h-0">{editorPanel}</div>
+            <div className="h-[40vh] border-t border-border/50">{previewPanel}</div>
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0">
+            <ResizablePanelGroup direction="horizontal" className="h-full">
+              {codeVisible && (
+                <>
+                  <ResizablePanel defaultSize={50} minSize={20}>
+                    {editorPanel}
+                  </ResizablePanel>
+                  {previewVisible && <ResizableHandle withHandle />}
+                </>
+              )}
+              {previewVisible && (
+                <ResizablePanel defaultSize={codeVisible ? 50 : 100} minSize={20}>
+                  {previewPanel}
+                </ResizablePanel>
+              )}
+              {!codeVisible && !previewVisible && (
+                <ResizablePanel defaultSize={100}>
+                  <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+                    Toggle code or preview to get started
+                  </div>
+                </ResizablePanel>
+              )}
+            </ResizablePanelGroup>
+          </div>
+        )}
 
-        {/* Preview */}
-        <div className="hidden md:flex flex-1 min-h-0">
-          <PreviewFrame
-            html={project.html}
-            css={project.css}
-            js={project.js}
-            packages={project.packages}
-            width={deviceWidths[device]}
-          />
-        </div>
+        <ConsolePanel
+          entries={consoleEntries}
+          onClear={() => setConsoleEntries([])}
+          isOpen={consoleOpen}
+        />
       </div>
-
-      {/* Mobile preview toggle */}
-      {isMobile && (
-        <div className="h-[40vh] border-t border-border/50">
-          <PreviewFrame
-            html={project.html}
-            css={project.css}
-            js={project.js}
-            packages={project.packages}
-            width={deviceWidths[device]}
-          />
-        </div>
-      )}
     </div>
   );
 };
