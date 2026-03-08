@@ -1,73 +1,126 @@
-# Welcome to your Lovable project
+# CodePlayground by azhar0i0
 
-## Project info
+A premium real-time HTML, CSS & JavaScript code editor that runs entirely in your browser. No installation, no backend — just open and start building.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## ✨ Features
 
-## How can I edit this code?
+### Real-Time Code Editor
+Write HTML, CSS, and JavaScript in separate panels with instant live preview. Changes render in real-time in a sandboxed iframe as you type. Error overlay catches and displays runtime errors.
 
-There are several ways of editing your application.
+### NPM Package Imports
+Import any npm package directly via the unpkg CDN — no build step required. Add packages like `lodash`, `axios`, or `gsap` from the package dialog and they're auto-injected into your preview.
 
-**Use Lovable**
+### Live Preview with Device Simulation
+Preview your project on **mobile (375px)**, **tablet (768px)**, and **desktop (full-width)** viewports with a single click. Smooth animated transitions between device sizes.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Save & Share Projects
+- **Local Save**: Projects are stored in localStorage with full project list management.
+- **Shareable Links**: Generate instant shareable URLs that encode your entire project. Anyone with the link can view or fork your work.
 
-Changes made via Lovable will be committed automatically to this repo.
+### Responsive Design
+The editor adapts to any screen size. On mobile, code panels stack with tab navigation and the preview renders below. On desktop, panels and preview sit side-by-side.
 
-**Use your preferred IDE**
+## 🚀 Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
+- Node.js 18+ & npm
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project
+cd codeplayground
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Deployment (Vercel)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The project includes `vercel.json` for seamless deployment:
 
-**Use GitHub Codespaces**
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Deploy
+vercel
+```
 
-## What technologies are used for this project?
+## 🏗️ Project Structure
 
-This project is built with:
+```
+src/
+├── components/
+│   ├── editor/
+│   │   ├── CodePanel.tsx        # Code editing textarea with language labels
+│   │   ├── DeviceSimulator.tsx  # Mobile/tablet/desktop viewport toggle
+│   │   ├── PackageImporter.tsx  # NPM package dialog
+│   │   ├── PreviewFrame.tsx     # Sandboxed iframe with live rendering
+│   │   └── Toolbar.tsx          # Save, share, device controls
+│   ├── landing/
+│   │   ├── Hero.tsx             # Hero section with CTAs
+│   │   ├── Features.tsx         # Feature cards grid
+│   │   ├── HowItWorks.tsx       # 3-step flow
+│   │   └── Footer.tsx           # Site footer
+│   └── ui/                      # shadcn/ui components
+├── hooks/
+│   ├── useProject.ts            # Project state management
+│   └── use-mobile.tsx           # Responsive breakpoint hook
+├── lib/
+│   ├── projectEncoder.ts        # Save/load/encode/decode projects
+│   └── utils.ts                 # Utility functions
+├── pages/
+│   ├── Landing.tsx              # Marketing homepage
+│   ├── Editor.tsx               # Main code playground
+│   ├── SharedProject.tsx        # Read-only shared project viewer
+│   └── NotFound.tsx             # 404 page
+└── index.css                    # Design system tokens
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🎨 Design System
 
-## How can I deploy this project?
+- **Typography**: Inter (UI) + JetBrains Mono (code)
+- **Theme**: Dark-mode-first with glassmorphism panels
+- **Colors**: Purple → Blue → Cyan gradient palette
+- **Animations**: Framer Motion for page transitions, scroll reveals, and micro-interactions
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 🛠️ Tech Stack
 
-## Can I connect a custom domain to my Lovable project?
+- **React 18** + TypeScript
+- **Vite** — Lightning-fast dev server
+- **Tailwind CSS** — Utility-first styling
+- **Framer Motion** — Animations
+- **shadcn/ui** — UI component library
+- **React Router** — Client-side routing
 
-Yes, you can!
+## 📄 Usage
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Open the editor** — Click "Start Coding" from the landing page
+2. **Write code** — Use the HTML, CSS, and JS panels
+3. **Add packages** — Click the Packages button to import npm libraries
+4. **Simulate devices** — Toggle between mobile, tablet, and desktop views
+5. **Save** — Click Save to store locally
+6. **Share** — Click Share to copy a shareable link to your clipboard
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📜 License
+
+MIT © azhar0i0
+
+---
+
+Built with ❤️ by [azhar0i0](https://github.com/azhar0i0)
