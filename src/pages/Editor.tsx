@@ -32,7 +32,7 @@ const Editor = () => {
     ? getProjectsFromStorage().find((p) => p.id === projectId)
     : undefined;
 
-  const { project, updateField, addPackage, removePackage } =
+  const { project, updateField, addPackage, removePackage, save } =
     useProject(existingProject);
 
   const [html, setHtml] = useState(project.html);
