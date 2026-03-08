@@ -32,7 +32,7 @@ const Editor = () => {
     ? getProjectsFromStorage().find((p) => p.id === projectId)
     : undefined;
 
-  const { project, updateField, addPackage, removePackage } =
+  const { project, updateField, addPackage, removePackage, save } =
     useProject(existingProject);
 
   const [html, setHtml] = useState(project.html);
@@ -59,6 +59,14 @@ const Editor = () => {
       setIsUpdating(false);
     }, DEBOUNCE_MS);
   }, [html, css, js, updateField]);
+
+  // Auto-save to localStorage whenever project changes
+  useEffect(() => {
+    const autoSaveTimeout = setTimeout(() => {
+      save();
+    }, DEBOUNCE_MS + 500);
+    return () => clearTimeout(autoSaveTimeout);
+  }, [save]);
 
   useEffect(() => {
     scheduleUpdate();
