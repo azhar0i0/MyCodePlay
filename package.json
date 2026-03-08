@@ -13,7 +13,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@codemirror/lang-html": "^6.4.11",
     "@codemirror/language": "^6.12.2",
     "@hookform/resolvers": "^3.10.0",
     "@monaco-editor/react": "^4.7.0",
