@@ -60,6 +60,14 @@ const Editor = () => {
     }, DEBOUNCE_MS);
   }, [html, css, js, updateField]);
 
+  // Auto-save to localStorage whenever project changes
+  useEffect(() => {
+    const autoSaveTimeout = setTimeout(() => {
+      save();
+    }, DEBOUNCE_MS + 500);
+    return () => clearTimeout(autoSaveTimeout);
+  }, [save]);
+
   useEffect(() => {
     scheduleUpdate();
     return () => {
