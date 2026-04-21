@@ -2,6 +2,8 @@
 
 A premium real-time HTML, CSS & JavaScript code editor that runs entirely in your browser. No installation, no backend — just open and start building.
 
+![Hero Section Preview Image](/preview.png)
+
 ## ✨ Features
 
 ### Real-Time Code Editor
