@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   Project,
+  ProjectMode,
   createEmptyProject,
   saveProjectToStorage,
   encodeProject,
@@ -12,12 +13,47 @@ export function useProject(initial?: Project) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const updateField = useCallback(
-    (field: "html" | "css" | "js" | "name", value: string) => {
+    (field: "html" | "css" | "js" | "name" | "mode", value: string) => {
       setProject((prev) => ({ ...prev, [field]: value, updatedAt: Date.now() }));
       setIsSaved(false);
     },
     []
   );
+
+  const updateFile = useCallback((filename: string, content: string) => {
+    setProject((prev) => ({
+      ...prev,
+      files: { ...(prev.files || {}), [filename]: content },
+      updatedAt: Date.now(),
+    }));
+    setIsSaved(false);
+  }, []);
+
+  const addFile = useCallback((filename: string, content = "") => {
+    setProject((prev) => ({
+      ...prev,
+      files: { ...(prev.files || {}), [filename]: content },
+      updatedAt: Date.now(),
+    }));
+  }, []);
+
+  const deleteFile = useCallback((filename: string) => {
+    setProject((prev) => {
+      const files = { ...(prev.files || {}) };
+      delete files[filename];
+      return { ...prev, files, updatedAt: Date.now() };
+    });
+  }, []);
+
+  const switchMode = useCallback((mode: ProjectMode) => {
+    setProject((prev) => {
+      if (prev.mode === mode) return prev;
+      const fresh = createEmptyProject(prev.name, mode);
+      fresh.id = prev.id;
+      fresh.packages = prev.packages;
+      return fresh;
+    });
+  }, []);
 
   const addPackage = useCallback((pkg: string) => {
     setProject((prev) => ({
@@ -57,6 +93,10 @@ export function useProject(initial?: Project) {
     project,
     setProject,
     updateField,
+    updateFile,
+    addFile,
+    deleteFile,
+    switchMode,
     addPackage,
     removePackage,
     save,
