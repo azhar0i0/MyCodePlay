@@ -36,7 +36,7 @@ const ReactPreviewFrame = ({ files, packages, width, isUpdating, onConsoleEntry 
         const module = { exports };
         try {
           const code = Babel.transform(${JSON.stringify(code)}, {
-            presets: ["react"],
+            presets: [["env", { modules: "commonjs" }], "react"],
             filename: "${name}"
           }).code;
           const fn = new Function("require", "exports", "module", "React", "useState", "useEffect", "useRef", "useCallback", "useMemo", "useContext", "useReducer", code);
@@ -101,7 +101,7 @@ const ReactPreviewFrame = ({ files, packages, width, isUpdating, onConsoleEntry 
 
       // Transpile App.jsx
       const appCode = Babel.transform(${JSON.stringify(appJsx)}, {
-        presets: ["react"],
+        presets: [["env", { modules: "commonjs" }], "react"],
         filename: "App.jsx"
       }).code;
 
