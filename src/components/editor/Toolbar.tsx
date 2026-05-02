@@ -1,9 +1,11 @@
-import { Home, Terminal, PanelLeftClose, PanelLeft, Eye, EyeOff } from "lucide-react";
+import { Home, Terminal, PanelLeftClose, PanelLeft, Eye, EyeOff, Atom, Code2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import DeviceSimulator, { DeviceType } from "./DeviceSimulator";
 import PackageImporter from "./PackageImporter";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ProjectMode } from "@/lib/projectEncoder";
+import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   projectName: string;
@@ -19,6 +21,8 @@ interface ToolbarProps {
   onToggleCode: () => void;
   previewVisible: boolean;
   onTogglePreview: () => void;
+  mode: ProjectMode;
+  onModeChange: (mode: ProjectMode) => void;
 }
 
 const Toolbar = ({
@@ -35,6 +39,8 @@ const Toolbar = ({
   onToggleCode,
   previewVisible,
   onTogglePreview,
+  mode,
+  onModeChange,
 }: ToolbarProps) => {
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-secondary/20 backdrop-blur-sm shrink-0">
@@ -49,6 +55,44 @@ const Toolbar = ({
           onChange={(e) => onNameChange(e.target.value)}
           className="bg-transparent text-sm font-semibold text-foreground focus:outline-none border-b border-transparent focus:border-primary/50 px-1 py-0.5 max-w-[200px]"
         />
+
+        {/* Mode switcher */}
+        <div className="flex items-center bg-secondary/40 rounded-lg p-0.5 border border-border/30">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onModeChange("vanilla")}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all",
+                  mode === "vanilla"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Code2 className="w-3 h-3" />
+                <span className="hidden sm:inline">Vanilla</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>HTML / CSS / JS</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => onModeChange("react")}
+                className={cn(
+                  "flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all",
+                  mode === "react"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Atom className="w-3 h-3" />
+                <span className="hidden sm:inline">React</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>React + JSX</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       <div className="flex items-center gap-1.5">
