@@ -58,7 +58,7 @@ const Editor = () => {
   const [consoleEntries, setConsoleEntries] = useState<ConsoleEntry[]>([]);
   const [codeVisible, setCodeVisible] = useState(true);
   const [previewVisible, setPreviewVisible] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  
   const [newFileName, setNewFileName] = useState("");
   const [showNewFile, setShowNewFile] = useState(false);
 
@@ -78,15 +78,13 @@ const Editor = () => {
   const [css, setCss] = useState(project.css);
   const [js, setJs] = useState(project.js);
 
-  // React mode: debounced files for preview
+  // React mode: files snapshot for preview
   const [previewFiles, setPreviewFiles] = useState<Record<string, string>>(project.files || {});
 
-  // Vanilla preview state (debounced)
+  // Vanilla preview state
   const [previewHtml, setPreviewHtml] = useState(project.html);
   const [previewCss, setPreviewCss] = useState(project.css);
   const [previewJs, setPreviewJs] = useState(project.js);
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Manual run handler
   const handleRun = useCallback(() => {
