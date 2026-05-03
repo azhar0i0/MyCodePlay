@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import CodePanel from "@/components/editor/CodePanel";
@@ -18,7 +18,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 
-const DEBOUNCE_MS = 2000;
+
 
 const LANG_MAP: Record<string, string> = {
   ".jsx": "javascript",
@@ -58,7 +58,7 @@ const Editor = () => {
   const [consoleEntries, setConsoleEntries] = useState<ConsoleEntry[]>([]);
   const [codeVisible, setCodeVisible] = useState(true);
   const [previewVisible, setPreviewVisible] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  
   const [newFileName, setNewFileName] = useState("");
   const [showNewFile, setShowNewFile] = useState(false);
 
@@ -78,57 +78,40 @@ const Editor = () => {
   const [css, setCss] = useState(project.css);
   const [js, setJs] = useState(project.js);
 
-  // React mode: debounced files for preview
+  // React mode: files snapshot for preview
   const [previewFiles, setPreviewFiles] = useState<Record<string, string>>(project.files || {});
 
-  // Vanilla preview state (debounced)
+  // Vanilla preview state
   const [previewHtml, setPreviewHtml] = useState(project.html);
   const [previewCss, setPreviewCss] = useState(project.css);
   const [previewJs, setPreviewJs] = useState(project.js);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-
-  // Vanilla schedule
-  const scheduleVanillaUpdate = useCallback(() => {
-    setIsUpdating(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
+  // Manual run handler
+  const handleRun = useCallback(() => {
+    if (isReact) {
+      setPreviewFiles({ ...(project.files || {}) });
+    } else {
       setPreviewHtml(html);
       setPreviewCss(css);
       setPreviewJs(js);
       updateField("html", html);
       updateField("css", css);
       updateField("js", js);
-      setIsUpdating(false);
-    }, DEBOUNCE_MS);
-  }, [html, css, js, updateField]);
-
-  // React schedule
-  const scheduleReactUpdate = useCallback(() => {
-    setIsUpdating(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setPreviewFiles({ ...(project.files || {}) });
-      setIsUpdating(false);
-    }, DEBOUNCE_MS);
-  }, [project.files]);
-
-  useEffect(() => {
-    if (isReact) {
-      scheduleReactUpdate();
-    } else {
-      scheduleVanillaUpdate();
     }
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [isReact, scheduleVanillaUpdate, scheduleReactUpdate]);
+    save();
+  }, [isReact, project.files, html, css, js, updateField, save]);
 
-  // Auto-save
+  // Keyboard shortcut: Ctrl+Enter to run
   useEffect(() => {
-    const t = setTimeout(() => save(), DEBOUNCE_MS + 500);
-    return () => clearTimeout(t);
-  }, [save]);
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleRun();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleRun]);
 
   const handleConsoleEntry = useCallback((entry: ConsoleEntry) => {
     setConsoleEntries((prev) => [...prev, entry]);
@@ -298,7 +281,7 @@ const Editor = () => {
       files={previewFiles}
       packages={project.packages}
       width={deviceWidths[device]}
-      isUpdating={isUpdating}
+      isUpdating={false}
       onConsoleEntry={handleConsoleEntry}
     />
   ) : (
@@ -308,7 +291,7 @@ const Editor = () => {
       js={previewJs}
       packages={project.packages}
       width={deviceWidths[device]}
-      isUpdating={isUpdating}
+      isUpdating={false}
       onConsoleEntry={handleConsoleEntry}
     />
   );
@@ -323,6 +306,7 @@ const Editor = () => {
         packages={project.packages}
         onAddPackage={addPackage}
         onRemovePackage={removePackage}
+        onRun={handleRun}
         consoleOpen={consoleOpen}
         onToggleConsole={() => setConsoleOpen((v) => !v)}
         codeVisible={codeVisible}
