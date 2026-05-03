@@ -281,7 +281,7 @@ const Editor = () => {
       files={previewFiles}
       packages={project.packages}
       width={deviceWidths[device]}
-      isUpdating={isUpdating}
+      isUpdating={false}
       onConsoleEntry={handleConsoleEntry}
     />
   ) : (
@@ -291,7 +291,7 @@ const Editor = () => {
       js={previewJs}
       packages={project.packages}
       width={deviceWidths[device]}
-      isUpdating={isUpdating}
+      isUpdating={false}
       onConsoleEntry={handleConsoleEntry}
     />
   );
