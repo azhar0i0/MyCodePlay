@@ -1,4 +1,4 @@
-import { Home, Terminal, PanelLeftClose, PanelLeft, Eye, EyeOff, Atom, Code2 } from "lucide-react";
+import { Home, Terminal, PanelLeftClose, PanelLeft, Eye, EyeOff, Atom, Code2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import DeviceSimulator, { DeviceType } from "./DeviceSimulator";
@@ -15,6 +15,7 @@ interface ToolbarProps {
   packages: string[];
   onAddPackage: (pkg: string) => void;
   onRemovePackage: (pkg: string) => void;
+  onRun: () => void;
   consoleOpen: boolean;
   onToggleConsole: () => void;
   codeVisible: boolean;
@@ -33,6 +34,7 @@ const Toolbar = ({
   packages,
   onAddPackage,
   onRemovePackage,
+  onRun,
   consoleOpen,
   onToggleConsole,
   codeVisible,
