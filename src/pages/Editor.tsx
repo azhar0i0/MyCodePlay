@@ -88,47 +88,32 @@ const Editor = () => {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Vanilla schedule
-  const scheduleVanillaUpdate = useCallback(() => {
-    setIsUpdating(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
+  // Manual run handler
+  const handleRun = useCallback(() => {
+    if (isReact) {
+      setPreviewFiles({ ...(project.files || {}) });
+    } else {
       setPreviewHtml(html);
       setPreviewCss(css);
       setPreviewJs(js);
       updateField("html", html);
       updateField("css", css);
       updateField("js", js);
-      setIsUpdating(false);
-    }, DEBOUNCE_MS);
-  }, [html, css, js, updateField]);
-
-  // React schedule
-  const scheduleReactUpdate = useCallback(() => {
-    setIsUpdating(true);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setPreviewFiles({ ...(project.files || {}) });
-      setIsUpdating(false);
-    }, DEBOUNCE_MS);
-  }, [project.files]);
-
-  useEffect(() => {
-    if (isReact) {
-      scheduleReactUpdate();
-    } else {
-      scheduleVanillaUpdate();
     }
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [isReact, scheduleVanillaUpdate, scheduleReactUpdate]);
+    save();
+  }, [isReact, project.files, html, css, js, updateField, save]);
 
-  // Auto-save
+  // Keyboard shortcut: Ctrl+Enter to run
   useEffect(() => {
-    const t = setTimeout(() => save(), DEBOUNCE_MS + 500);
-    return () => clearTimeout(t);
-  }, [save]);
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleRun();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleRun]);
 
   const handleConsoleEntry = useCallback((entry: ConsoleEntry) => {
     setConsoleEntries((prev) => [...prev, entry]);
@@ -323,6 +308,7 @@ const Editor = () => {
         packages={project.packages}
         onAddPackage={addPackage}
         onRemovePackage={removePackage}
+        onRun={handleRun}
         consoleOpen={consoleOpen}
         onToggleConsole={() => setConsoleOpen((v) => !v)}
         codeVisible={codeVisible}
