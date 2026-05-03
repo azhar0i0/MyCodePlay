@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import CodePanel from "@/components/editor/CodePanel";
@@ -18,7 +18,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 
-const DEBOUNCE_MS = 2000;
+
 
 const LANG_MAP: Record<string, string> = {
   ".jsx": "javascript",
