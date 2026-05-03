@@ -98,6 +98,22 @@ const Toolbar = ({
       </div>
 
       <div className="flex items-center gap-1.5">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              onClick={onRun}
+              className="h-8 gap-1.5 text-xs font-semibold bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-md shadow-emerald-500/20 border-0"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span className="hidden sm:inline">Run</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Run Code (Ctrl+Enter)</TooltipContent>
+        </Tooltip>
+
+        <div className="w-px h-6 bg-border/50 mx-1 hidden sm:block" />
+
         <PackageImporter packages={packages} onAdd={onAddPackage} onRemove={onRemovePackage} />
         <DeviceSimulator active={device} onChange={onDeviceChange} />
 
